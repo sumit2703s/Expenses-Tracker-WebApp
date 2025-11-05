@@ -1,0 +1,46 @@
+version: "3.8"
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+        MYSQL_ROOT_PASSWORD: springstudent
+        MYSQL_DATABASE: expenses_tracker
+        MYSQL_USER: springstudent
+        MYSQL_PASSWORD: springstudent
+
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    networks:
+      - appbridge
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD","mysqladmin","ping","-h","localhost","-uspringstudent","-pspringstudent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: always
+
+
+  mainapp:
+    build: .
+    container_name: expense-tracker
+    ports:
+      - "8080:8080"
+    networks:
+      - appbridge
+    depends_on:
+      - mysql
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/expenses_tracker"
+      SPRING_DATASOURCE_USERNAME: springstudent
+      SPRING_DATASOURCE_PASSWORD: springstudent
+
+networks:
+  appbridge:
+
+volumes:
+  mysql-data:
