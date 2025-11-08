@@ -26,6 +26,7 @@ services:
 
   mainapp:
     build: .
+    image: sumit2703s/expenses-mainapp:latest
     container_name: expense-tracker
     ports:
       - "8080:8080"
