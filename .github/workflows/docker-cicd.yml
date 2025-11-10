@@ -27,3 +27,19 @@ jobs:
         run: |
           docker compose build
           docker compose push
+          
+  deploy-to-ec2:
+    needs: push-to-dockerhub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker pull sumit2703/expenses-mainapp:latest
+            sudo docker stop app || true
+            sudo docker rm app || true
+            sudo docker run -d -p 80:8000 --name app sumit2703/expenses-mainapp:latest
