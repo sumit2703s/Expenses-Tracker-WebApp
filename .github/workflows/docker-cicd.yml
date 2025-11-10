@@ -29,7 +29,7 @@ jobs:
           docker compose push
           
   deploy-to-ec2:
-    needs: push-to-dockerhub
+    needs: build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Deploy on EC2
