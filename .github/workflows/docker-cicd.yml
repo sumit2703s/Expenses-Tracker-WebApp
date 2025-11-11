@@ -34,7 +34,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "."
-          target: "/home/ubuntu/app"
+          target: "/home/ubuntu/"
 
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v0.1.6
@@ -43,7 +43,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu/app
+            cd /home/ubuntu/
             ls -la  # This should now show docker-compose.yml
             sudo docker-compose down || true
             sudo docker-compose pull mainapp || true
