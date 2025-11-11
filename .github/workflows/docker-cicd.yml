@@ -31,7 +31,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "docker-compose.yml"  # Only copy compose file
-          target: "/home/ubuntu/"
+          target: "/home/ubuntu/app"
           overwrite: true
 
       - name: Deploy on EC2
@@ -41,9 +41,8 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu/
+            cd /home/ubuntu/app
             ls -la docker-compose.yml
-            # Verify file is valid YAML
             head -n 5 docker-compose.yml
             sudo docker-compose down
             sudo docker-compose pull
