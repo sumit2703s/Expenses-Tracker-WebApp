@@ -7,34 +7,32 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
       - name: Build and push Docker image
         run: |
           docker build -t sumit2703/expenses-mainapp:latest .
           docker push sumit2703/expenses-mainapp:latest
-          
+
   deploy-to-ec2:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Copy ALL files to EC2
+      - name: Copy files to EC2
         uses: appleboy/scp-action@v0.1.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "."
+          source: "docker-compose.yml"  # Only copy compose file
           target: "/home/ubuntu/"
+          overwrite: true
 
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v0.1.6
@@ -44,7 +42,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/
-            ls -la  # This should now show docker-compose.yml
-            sudo docker-compose down || true
-            sudo docker-compose pull mainapp || true
+            ls -la docker-compose.yml
+            # Verify file is valid YAML
+            head -n 5 docker-compose.yml
+            sudo docker-compose down
+            sudo docker-compose pull
             sudo docker-compose up -d
