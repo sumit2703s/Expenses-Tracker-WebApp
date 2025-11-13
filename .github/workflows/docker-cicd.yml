@@ -7,7 +7,6 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,11 +21,21 @@ jobs:
         run: |
           docker build -t sumit2703/expenses-mainapp:latest .
           docker push sumit2703/expenses-mainapp:latest
-          
+
   deploy-to-ec2:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+      - name: Copy docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.yml"  # Only this file from repo
+          target: "/home/ubuntu/app"
+          overwrite: true
+
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v0.1.6
         with:
