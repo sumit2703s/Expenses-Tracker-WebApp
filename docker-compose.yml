@@ -32,7 +32,8 @@ services:
     networks:
       - appbridge
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     restart: always
     environment:
       SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/expenses_tracker"
