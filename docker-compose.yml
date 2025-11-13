@@ -25,7 +25,6 @@ services:
 
 
   mainapp:
-    build: .
     image: sumit2703/expenses-mainapp:latest
     container_name: expense-tracker
     ports:
