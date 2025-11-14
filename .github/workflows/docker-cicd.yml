@@ -48,35 +48,24 @@ jobs:
           script: |
             cd /home/ubuntu/app
             
-            # Install Docker if not present
-            if ! command -v docker &> /dev/null; then
-              echo "Installing Docker..."
-              sudo apt-get update
-              sudo apt-get install -y ca-certificates curl gnupg
-              sudo install -m 0755 -d /etc/apt/keyrings
-              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-              sudo chmod a+r /etc/apt/keyrings/docker.gpg
-              echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-              sudo apt-get update
-              sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-              
-              # Add user to docker group
-              sudo usermod -aG docker ubuntu
-              
-              # Start Docker
-              sudo systemctl start docker
-              sudo systemctl enable docker
-              
-              echo "Docker installed successfully!"
+            REQUIRED_VERSION="2.29.0"
+
+            if command -v docker-compose &> /dev/null; then
+              INSTALLED_VERSION=$(docker-compose version --short || echo "0")
+              if [ "$INSTALLED_VERSION" = "$REQUIRED_VERSION" ]; then
+                exit 0
+              fi
             fi
             
-            # Install docker-compose if not present
-            if ! command -v docker-compose &> /dev/null; then
-              echo "Installing docker-compose..."
-              sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
-              echo "docker-compose installed successfully!"
-            fi
+            sudo rm -f /usr/local/bin/docker-compose
+            
+            sudo curl -L \
+              "https://github.com/docker/compose/releases/download/v${REQUIRED_VERSION}/docker-compose-$(uname -s)-$(uname -m)" \
+              -o /usr/local/bin/docker-compose
+            
+            sudo chmod +x /usr/local/bin/docker-compose
+            sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
+            
             
             # Verify installations
             docker --version
