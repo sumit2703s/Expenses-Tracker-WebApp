@@ -77,16 +77,7 @@ jobs:
             # Deploy
             sudo docker-compose down || true
             sudo docker-compose up -d
-            
-            # Wait and show status
+
             echo "Waiting for services to start..."
             sleep 30
             
-            echo "=== Container Status ==="
-            sudo docker-compose ps
-            
-            echo "=== MySQL Logs ==="
-            sudo docker-compose logs --tail=20 mysql
-            
-            echo "=== App Logs ==="
-            sudo docker-compose logs --tail=20 mainapp
