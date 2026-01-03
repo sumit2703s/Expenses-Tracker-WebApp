@@ -1,4 +1,5 @@
 name: Build and Deploy to EC2
+#Currently deployment on EC2 is not working because instance is shutdown.
 
 on:
   push:
