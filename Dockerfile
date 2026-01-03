@@ -1,4 +1,5 @@
 FROM maven:3.8.3-openjdk-17 AS builder
+#Adding a comment to perform a test
 
 WORKDIR /app
 
