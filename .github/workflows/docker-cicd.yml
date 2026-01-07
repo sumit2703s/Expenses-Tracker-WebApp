@@ -1,9 +1,7 @@
 name: Build and Push Docker Image
-
 on:
   push:
     branches: [ "main" ]
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -17,19 +15,29 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       
-      - name: Build and push Docker image
+      - name: Build Docker image
         run: |
           docker build -t sumit2703/expenses-mainapp:latest .
+      
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'sumit2703/expenses-mainapp:latest'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+      
+      - name: Push Docker image
+        run: |
           docker push sumit2703/expenses-mainapp:latest
       
       - name: Docker Compose Up
         run: |
-          docker-compose down || true
-          docker-compose pull
-          docker-compose up -d
-          echo "Services started successfully"
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-results.sarif'
+          docker compose down || true
+          docker compose pull
+          docker compose up -d
+          echo "✅ Services started successfully"
