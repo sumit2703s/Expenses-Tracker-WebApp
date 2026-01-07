@@ -1,5 +1,4 @@
-name: Build and Deploy to EC2
-#Currently deployment on EC2 is not working because instance is shutdown.
+name: Build and Push Docker Image
 
 on:
   push:
@@ -22,63 +21,15 @@ jobs:
         run: |
           docker build -t sumit2703/expenses-mainapp:latest .
           docker push sumit2703/expenses-mainapp:latest
-
-  deploy-to-ec2:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
       
-      - name: Copy docker-compose.yml to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.yml"
-          target: "/home/ubuntu/app/"
-          overwrite: true
-      
-      - name: Deploy on EC2
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd /home/ubuntu/app
-            
-            REQUIRED_VERSION="2.29.0"
+      - name: Docker Compose Up
+        run: |
+          docker-compose down || true
+          docker-compose pull
+          docker-compose up -d
+          echo "Services started successfully"
 
-            if command -v docker-compose &> /dev/null; then
-              INSTALLED_VERSION=$(docker-compose version --short || echo "0")
-              if [ "$INSTALLED_VERSION" = "$REQUIRED_VERSION" ]; then
-                exit 0
-              fi
-            fi
-            
-            sudo rm -f /usr/local/bin/docker-compose
-            
-            sudo curl -L \
-              "https://github.com/docker/compose/releases/download/v${REQUIRED_VERSION}/docker-compose-$(uname -s)-$(uname -m)" \
-              -o /usr/local/bin/docker-compose
-            
-            sudo chmod +x /usr/local/bin/docker-compose
-            sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
-            
-            
-            # Verify installations
-            docker --version
-            docker-compose --version
-            
-            # Pull latest image
-            sudo docker pull sumit2703/expenses-mainapp:latest
-            
-            # Deploy
-            sudo docker-compose down || true
-            sudo docker-compose up -d
-
-            echo "Waiting for services to start..."
-            sleep 30
-            
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
