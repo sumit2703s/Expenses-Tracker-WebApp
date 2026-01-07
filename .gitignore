@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+mysql-data/
+node_modules/
+.env
+__pycache__/
+*.pyc
