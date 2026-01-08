@@ -36,14 +36,18 @@ jobs:
   push:
     runs-on: ubuntu-latest
     needs: trivyScan
-    steps: 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Push Docker image
         run: |
           docker push sumit2703/expenses-mainapp:latest
   deploy:
     runs-on: ubuntu-latest
     needs: push
-    steps:    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4    
       - name: Docker Compose Up
         run: |
           docker compose down || true
