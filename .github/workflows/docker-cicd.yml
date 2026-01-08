@@ -1,9 +1,9 @@
-name: Build and Push Docker Image
+name: Build -> Scan -> Push -> Deploy
 on:
   push:
     branches: [ "main" ]
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -18,7 +18,9 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t sumit2703/expenses-mainapp:latest .
-      
+  scanTrivy:
+    runs-on: ubuntu-latest
+    steps:
       - name: Scan with Trivy
         uses: aquasecurity/trivy-action@master
         with:
@@ -30,11 +32,15 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
-      
+  pushDocker:
+    runs-on: ubuntu-latest
+    steps: 
       - name: Push Docker image
         run: |
           docker push sumit2703/expenses-mainapp:latest
-      
+  deployment:
+    runs-on: ubuntu-latest
+    steps:    
       - name: Docker Compose Up
         run: |
           docker compose down || true
